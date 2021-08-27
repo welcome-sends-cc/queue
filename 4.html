@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0,user-scalable=no">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>Document</title>
+</head>
+<body>
+    <div id="header">
+        <el-tabs @tab-click="handleClick">
+          <el-tab-pane label="策划部" name="策划部">策划部</el-tab-pane>
+          <el-tab-pane label="美工部" name="美工部">美工部</el-tab-pane>
+          <el-tab-pane label="软件部" name="软件部">软件部</el-tab-pane>
+          <el-tab-pane label="运维部" name="运维部">运维部</el-tab-pane>
+          <el-tab-pane label="运营部" name="运营部">运营部</el-tab-pane>
+        </el-tabs>
+    </div>
+    <div id="progress">
+        <el-collapse id="details">
+            <el-collapse-item title="详情" name="1">
+              <div v-text="'已报名：' + all">已报名：25</div>
+              <div v-text="'已完成：' + over">已完成：20</div>
+              <div v-text="'队列中：' + inqueue">队列中：4</div>
+            </el-collapse-item>
+        </el-collapse>    
+        <el-progress :text-inside="true" :stroke-width="40" :percentage="over/all*100" id="progressbar"></el-progress>
+    </div>
+    <div id="table" >
+      <template>
+        <el-table
+          :data="applicantlist"
+          style="width: 100%">
+          <el-table-column
+            label="时间"
+            prop="time"
+            min-width="25%">
+          </el-table-column>
+          <el-table-column
+            label="姓名"
+            prop="name"
+            min-width="25%">
+          </el-table-column>
+          <el-table-column
+            label="专业"
+            prop="speciality"
+            min-width="25%">
+          </el-table-column>
+          <el-table-column
+            align="right"
+            min-width="15%">
+            <template slot-scope="scope">
+              <el-button
+              type="primary" icon="el-icon-edit" circle
+                @click="handleEdit(scope.$index, scope.row)"></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </template>
+    </div> 
+      <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+        }
+        #app {
+            width: 100vw;
+        }
+        #details {
+            margin: 3vh 2vw;
+        }
+        #progressbar {
+            margin: 3vh 2vw;
+        }
+        #header {
+            margin:2vh 2vw;
+        }
+      </style>
+
+
+
+    <script type="text/javascript">
+		var initViewport = function(height){
+		var metaEl = document.querySelector("#viewportMeta");
+		var content = "width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0,height=" + height;
+		metaEl.setAttribute('name', 'viewport');
+		metaEl.setAttribute('content', content);
+		}
+		initViewport(window.innerHeight);
+		var addEvenListener = function(callback, eventName) {
+    	let addEvenListenerFn = window.addEventListener || window.attatchEvent;
+    	let messageEvent = window.addEventListener ? eventName : "on" + eventName;
+    	addEvenListenerFn(messageEvent, callback, false);
+ 		}
+  
+		addEvenListener(function(){
+		setTimeout(function(){
+		initViewport(window.innerHeight);
+		},300)
+		},"orientationchange")
+    </script>
+</body>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    
+    var header = new Vue({
+      el: '#header',
+      data: {
+        department:"策划部"
+      },
+      methods: {
+        handleClick: function(tab){
+          console.log(tab.name);
+          this.department = tab.name;
+
+          axios.post("更换部门：请求获取详情接口",{
+              department:tab.name
+          })
+            .then((response) => {
+              progress.all = response.data.all;
+              progress.over = response.data.over;
+              progress.inqueue = response.data.inqueue;
+            })
+
+          axios.post("更换部门：请求获取学生列表数据接口",{
+              department:tab.name
+          })
+            .then((response) => {
+              table.applicantlist = response.data.applicantlist
+            })
+        }   
+      }
+    })
+
+    var progress = new Vue({
+        el: '#progress',
+        data: {
+          all:25,
+          over:23,
+          inqueue:1
+        },
+        methods: {
+          
+        },
+        mounted(){
+          setInterval(() => {
+            axios.post("请求获取详情接口",{
+              department:header.department
+              })
+              .then((response) => {
+                this.all = response.data.all;
+                this.over = response.data.over;
+                this.inqueue = response.data.inqueue;
+              })
+          }, 5000)
+        }
+    })
+
+    var table = new Vue({
+      el: '#table',
+      data: {
+        applicantlist: [{
+          studentId: '114514',
+          time: '15:15',
+          name: '小明',
+          speciality: '计算机类',
+        }, {
+          studentId: '1919810',
+          time: '15:18',
+          name: '小明',
+          speciality: '计算机类'
+        }, {
+          studentId: '1101010101',
+          time: '15:19',
+          name: '小明',
+          speciality: '计算机类',
+        }, {
+          studentId: '',
+          time: '15:17',
+          name: '小明',
+          speciality: '计算机类'
+        },{
+          studentId: '',
+          time: '15:18',
+          name: '小明',
+          speciality: '计算机类',
+        },{
+          studentId: '',
+          time: '15:44',
+          name: '小明',
+          speciality: '计算机类',
+        },{
+          studentId: '',
+          time: '15:18',
+          name: '小明',
+          speciality: '计算机类',
+        },{
+          studentId: '6666666666',
+          time: '15:18',
+          name: '小明',
+          speciality: '计算机类',
+        },
+        ],
+      },
+      methods:{
+        handleEdit(index, row) {
+        console.log(row.time);
+        console.log(row.studentId);
+        localStorage.setItem("studentId", row.studentId);
+        location.href = "下一个页面"
+      },
+      },
+      mounted(){
+        setInterval(() => {
+            axios.post("请求获取学生列表数据接口",{
+              department:header.department
+              })
+              .then((response) => {
+                this.applicantlist = response.data.applicantlist
+              })
+          }, 5000)
+      }
+    })
+
+  </script>
+</html>

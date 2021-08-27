@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0,user-scalable=no">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>Document</title>
+</head>
+<body>
+	<div id="header">
+		<el-page-header @back="goBack" content="后台管理">
+		</el-page-header>		
+	</div>
+
+	<div class="logo"></div>
+
+	<div id="main">
+		<el-descriptions title="" direction="vertical" :column="4" border>
+			<el-descriptions-item label="姓名">
+				<span v-text="name"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="学号">
+				<span v-text="studentId"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="电话号码" :span="2">
+				<span v-text="phone"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="校区">
+				<span v-text="campus"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="学院">
+				<span v-text="academy"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="专业" :span="2">
+				<span v-text="profession"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="状态">
+			  <el-tag type="info" v-if="ifOK==0">未排队</el-tag>
+			  <el-tag size="small" v-if="ifOK==-1">排队中</el-tag>
+			  <el-tag type="warning" v-if="ifOK==2">面试中</el-tag>
+			  <el-tag type="success" v-if="ifOK==1">已完成</el-tag>
+			</el-descriptions-item>
+			<el-descriptions-item label="第一志愿">
+				<span v-text="department1"></span>
+			</el-descriptions-item>
+			<el-descriptions-item label="第二志愿">
+				<span v-text="department2"></span>
+			</el-descriptions-item>
+		</el-descriptions>
+	</div>
+
+	<div id="btn">
+		<el-dialog
+        title="提示"
+        v-model="centerDialogVisible1"
+        :visible="centerDialogVisible1"
+        width="80vw" 
+        top="35vh"
+        center>
+        <span>确定要完成面试吗？</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="centerDialogVisible1 = false">取 消</el-button>
+          <el-button type="primary" @click="finish">确 定</el-button>
+        </span>
+        </el-dialog>
+		
+		<el-dialog
+        title="提示"
+        v-model="centerDialogVisible2"
+        :visible="centerDialogVisible2"
+        width="80vw" 
+        top="35vh"
+        center>
+        <span>确定要取消面试吗？</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="centerDialogVisible2 = false">取 消</el-button>
+          <el-button type="primary" @click="cancel">确 定</el-button>
+        </span>
+        </el-dialog>
+		
+		<el-button type="danger" @click="centerDialogVisible2 = true">取消面试</el-button>
+		<el-button type="success" @click="centerDialogVisible1 = true">面试完成</el-button>
+	</div>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}		
+		#header {
+			margin-bottom: 5vh;
+		}
+		.logo {
+            width: 100vw;
+            height: 20vh;
+		    background-image: url("http://ipv4.home.vory.work:8802/app-icon/enroll_logo.png");
+      		background-repeat: no-repeat;
+      		background-position: center center;
+		    background-size: 20vh;
+            margin-bottom: 5vh;
+        }
+		#main {
+			margin: 0 2vw;
+		}
+		#btn {
+			margin: 5vh 3vw 0 3vw;
+			display: flex;
+			justify-content: space-around;
+
+		}
+	</style>
+
+    <script type="text/javascript">
+		var initViewport = function(height){
+		var metaEl = document.querySelector("#viewportMeta");
+		var content = "width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0,height=" + height;
+		metaEl.setAttribute('name', 'viewport');
+		metaEl.setAttribute('content', content);
+		}
+		initViewport(window.innerHeight);
+
+		var addEvenListener = function(callback, eventName) {
+    	let addEvenListenerFn = window.addEventListener || window.attatchEvent;
+    	let messageEvent = window.addEventListener ? eventName : "on" + eventName;
+    	addEvenListenerFn(messageEvent, callback, false);
+ 		}
+  
+		addEvenListener(function(){
+		setTimeout(function(){
+		initViewport(window.innerHeight);
+		},300)
+		},"orientationchange")
+    </script>
+</body>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+	new Vue({
+	  el:"#header",
+	  data: {
+
+	  },
+	  methods: {
+		goBack: function(){
+			location.href = "上一个页面"
+		}
+	  }
+	})
+    new Vue({
+      el: '#main',
+      data: {
+        studentId:'1145141919',
+		name:'???',
+		phone:'10101010101',
+		campus:'厦门校区',
+		academy:'计算机学院',
+		profession:'计算机类',
+		department1:'软件部',
+		department2:'运维部',
+		ifOK:2
+      },
+	  methods: {
+		  
+	  },
+	  mounted(){
+		axios.post("请求获取详情接口",{
+            department:header.department
+    	  })
+          .then((response) => {
+            this.studentId = response.data.studentId
+			this.name = response.data.name
+			this.phone = response.data.phone
+			this.campus = response.data.campus
+			this.academy = response.data.academy
+			this.profession = response.data.profession
+			this.department1 = response.data.department1
+			this.department2 = response.data.department2
+			this.ifOK = response.data.ifOK
+          })
+	  }
+
+    })
+	new Vue({
+	  el:"#btn",
+	  data: {
+		centerDialogVisible1:false,
+		centerDialogVisible2:false
+	  },
+	  methods: {
+		finish: function(){
+			this.centerDialogVisible1 = false
+			console.log("完成面试")
+			axios.post("完成面试接口",{
+              studentId: localStorage.studentId
+          	})
+            .then((response) => {
+				if(response.data.ifsuccess==1){
+              		alert("已完成面试！");
+				} else{
+					alert("请求失败");
+				}
+            })
+		},
+		cancel: function(){
+			this.centerDialogVisible2 = false
+			console.log("取消面试")
+			axios.post("取消面试接口",{
+              studentId: localStorage.studentId
+          	})
+            .then((response) => {
+				if(response.data.ifsuccess==1){
+              		alert("已取消面试！");
+				} else{
+					alert("请求失败");
+				}
+            })
+		}
+	  }
+	})
+  </script>
+</html>

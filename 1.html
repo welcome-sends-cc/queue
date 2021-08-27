@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0,user-scalable=no">
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>桑梓2021纳新</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+        }
+        @keyframes gradient-move {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+        html{
+            background: linear-gradient(
+                135deg,
+                hsl(170deg, 80%, 70%),
+                hsl(190deg, 80% ,70%),
+                hsl(250deg, 80%, 70%),
+                hsl(320deg, 80%, 70%)
+            );
+            background-size: 200% 200%;
+            animation-name: gradient-move;
+            animation-duration: 6s;
+            animation-iteration-count:infinite;
+            animation-direction: alternate;
+        }
+        .login {
+            width: 100vw;
+            height: 20vh;
+            margin-top: 10vh;
+            text-align: center;
+            line-height: 20vh;
+            font-size: 9vh;
+            opacity: 0.7;
+            font-family: 'Courier New', Courier, monospace;
+			color:#409EFF;
+			background-image: url("http://ipv4.home.vory.work:8802/app-icon/enroll_logo.png");
+			background-repeat: no-repeat;
+			background-position: center center;
+			background-size: 23vh;
+        }
+        body .form {
+            width: 100vw;
+            height: 50vh;
+            margin-top: 3vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+        body .form input {
+            text-align: center;
+            width: 80vw;
+            height: 7vh;
+            border-radius: 5vw;
+			position: relative;
+			left: 10vw;
+            opacity: 0.4;
+
+        }
+        body .form .submit {
+            width: 70vw;
+			height: 7vh;
+            border-radius: 7vw;
+            opacity: 0.9;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="login">Login</div>
+    <div class="form" id="login">
+		<el-input v-model="userName" placeholder="请输入姓名"></el-input>
+		<el-input v-model="studentId" placeholder="请输入学号"></el-input>
+		<el-input v-model="phoneNumber" placeholder="请输入手机号"></el-input>
+		<el-button type="primary" class="submit" id="submit" @click="Login">登录</el-button>
+    </div>
+    <script type="text/javascript">
+
+		var initViewport = function(height){
+		var metaEl = document.querySelector("#viewportMeta");
+		var content = "width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0,height=" + height;
+		metaEl.setAttribute('name', 'viewport');
+		metaEl.setAttribute('content', content);
+		}
+		initViewport(window.innerHeight);
+
+		var addEvenListener = function(callback, eventName) {
+    	let addEvenListenerFn = window.addEventListener || window.attatchEvent;
+    	let messageEvent = window.addEventListener ? eventName : "on" + eventName;
+    	addEvenListenerFn(messageEvent, callback, false);
+ 		 }
+  
+		addEvenListener(function(){
+		setTimeout(function(){
+		initViewport(window.innerHeight);
+		},300)
+		},"orientationchange")
+
+    </script>
+</body>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script>
+      
+    new Vue({
+      el: '#login',
+      data: {
+          userName:"",
+		  studentId:"",
+		  phoneNumber:""
+      },
+	  methods: {
+		  Login: function(){
+			  var that = this;
+			  axios.post("请求接口",{
+				  name: that.userName,
+				  studentid: that.studentId,
+				  phonenumber: that.phoneNumber
+			  })
+			  .then(function(response){
+                localStorage.setItem("studentId", that.studentId);
+				localStorage.setItem("token", response.data.token);
+                location.href = "下一个页面";
+				alert('登录成功！');
+			  },function(err){
+				  alert('未报名，请检查输入信息！');
+			  })
+		  }
+	  }
+    })
+  </script>
+</html>

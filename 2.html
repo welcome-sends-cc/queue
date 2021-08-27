@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0,user-scalable=no">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>预约面试</title>
+</head>
+<body>
+    <div class="title" id="title">
+        <div>预约面试</div>
+        <div>选择要先面试的部门</div>
+    </div>
+    <el-divider id="app"></el-divider>
+    <div id="main">
+        <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span v-text="'第一志愿：'+ firstDepartment">第一志愿：XX部</span>
+                <el-button style="float: right; padding: 3px 0" type="text" @click="queue1" v-if="ifOK1==0" :disabled="ifOK2==-1">点击排队</el-button>
+                <el-button style="float: right; padding: 3px 0" type="text" @click="queue1" v-if="ifOK1!=0" class="look">查看</el-button>
+            </div>
+            <div class="text item" v-text="'前面还有'+before1+'人'" v-if="ifOK1==0">前面还有x人</div>
+            <el-tag v-if="ifOK1==-1">已排队</el-tag>
+            <el-tag type="success" v-if="ifOK1==1">已面试</el-tag>
+            <div class="text item" id="position" v-if="ifOK1==0">面试地点：B506</div>
+        </el-card>
+        <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span v-text="'第二志愿：'+ secondDepartment" >第二志愿：XX部</span>
+                <el-button style="float: right; padding: 3px 0" type="text" @click="queue2" v-if="ifOK2==0" disabled="ifOK1==-1">点击排队</el-button>
+                <el-button style="float: right; padding: 3px 0" type="text" @click="queue2" v-if="ifOK2!=0" class="look">查看</el-button>
+            </div>
+            <div class="text item" v-text="'前面还有'+before1+'人'" v-if="ifOK2==0">前面还有x人</div>
+            <el-tag v-if="ifOK2==-1">已排队</el-tag>
+            <el-tag type="success" v-if="ifOK2==1">已面试</el-tag>
+            <div class="text item" id="position" v-if="ifOK2==0">面试地点：B506</div>
+        </el-card>
+    </div>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+        }
+        .title {
+            text-align: center;
+            width: 100vw;
+            height: 15vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            opacity: 0.7;
+            background-image: url("http://ipv4.home.vory.work:8802/app-icon/enroll_logo.png");
+		      	background-repeat: no-repeat;
+		       	background-position: center center;
+			      background-size: 18vh;
+        }
+        .title div {
+            line-height: 5vh;
+        }
+        .title div:first-child {
+            font-size: 5vh;
+        }
+        #main {
+          margin: 0 1vw;
+        }
+        .box-card {
+            margin-bottom: 5vh;
+        }
+        #position {
+            margin-top: 3vh !important;
+        } 
+        .box-card span {
+            font-weight: bold;
+        }
+
+    </style>
+
+
+    <script type="text/javascript">
+		var initViewport = function(height){
+		var metaEl = document.querySelector("#viewportMeta");
+		var content = "width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0,height=" + height;
+		metaEl.setAttribute('name', 'viewport');
+		metaEl.setAttribute('content', content);
+		}
+		initViewport(window.innerHeight);
+
+		var addEvenListener = function(callback, eventName) {
+    	let addEvenListenerFn = window.addEventListener || window.attatchEvent;
+    	let messageEvent = window.addEventListener ? eventName : "on" + eventName;
+    	addEvenListenerFn(messageEvent, callback, false);
+ 		}
+  
+		addEvenListener(function(){
+		setTimeout(function(){
+		initViewport(window.innerHeight);
+		},300)
+		},"orientationchange")
+    </script>
+</body>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    
+    new Vue({
+      el: '#title',
+      data: {
+          
+      },
+	  methods: {
+		  
+	  }
+    })
+    new Vue({
+      el: '#main',
+      data: {
+        firstDepartment:"软件部",
+        secondDepartment:"运维部",
+        before1:"x",
+        before2:"x",
+        ifOK1:-1,
+        ifOK2:0
+    },
+	  methods: {
+		  queue1: function(){
+        localStorage.setItem("department", this.firstDepartment);
+        localStorage.setItem("aspiration","第一志愿");
+        location.href = "下一个页面"
+      },
+      queue2: function(){
+        localStorage.setItem("department", this.secondDepartment);
+        localStorage.setItem("aspiration","第二志愿");
+        location.href = "下一个页面"
+      }
+	  },
+    mounted(){
+      axios.post("请求接口",{
+        token:localStorage.token,
+        studentid: localStorage.studentId
+      })
+      .then((response) => {
+        this.firstDepartment = response.data.department1;
+        this.secondDepartment = response.data.department2;
+        this.before1 = response.data.before1;
+        this.before2 = response.data.before2;
+        this.ifOK1 = response.data.ifOK1;
+        this.ifOK2 = response.data.ifOK2;
+      })
+      setInterval(() => {
+        axios.post("请求接口",{
+          token:localStorage.token,
+          studentid:localStorage.studentId,
+          department:this.firstDepartment
+      })
+        .then((response) => {
+          this.before1 = response.data.before;
+      })
+        axios.post("请求接口",{
+          token:localStorage.token,
+          studentid:localStorage.studentId,
+          department:this.secondDepartment
+      })
+        .then((response) => {
+          this.before2 = response.data.before
+      })
+      },5000)
+      console.log(this)
+    }
+    })
+    new Vue({
+      el: '#app',
+      data: {
+          
+      },
+	  methods: {
+		  
+	  }
+    })
+  </script>
+</html>

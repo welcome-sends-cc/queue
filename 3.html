@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0,user-scalable=no">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <el-page-header @back="goBack" content="详情" id="header">
+        </el-page-header>
+
+        <div class="logo"></div>
+
+        <el-descriptions title="" direction="vertical" :column="4" border>
+            <el-descriptions-item label="部门">
+              <span v-text="department"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="志愿">
+              <span v-text="aspiration"></span>
+            </el-descriptions-item>
+            <el-descriptions-item label="面试地点" :span="2">B506</el-descriptions-item>
+            <el-descriptions-item label="状态">
+              <el-tag type="danger" size="small" v-if="ifOK==0">未排队</el-tag>
+              <el-tag size="small" v-if="ifOK==-1&before!=0">已排队</el-tag>
+              <el-tag type="warning" V-IF="ifOK==-1&before==0">请前往面试</el-tag>
+              <el-tag type="success" size="small" v-if="ifOK==1">已面试</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="队列">
+              <span v-text="'在你前面还有' + before + '人...'" v-if="ifOK!=1"></span>
+            </el-descriptions-item>
+        </el-descriptions>
+
+        <el-dialog
+        title="提示"
+        v-model="centerDialogVisible1"
+        :visible="centerDialogVisible1"
+        width="80vw" 
+        top="35vh"
+        center>
+        <span>确定要进入排队吗？</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="centerDialogVisible1 = false">取 消</el-button>
+          <el-button type="primary" @click="queue">确 定</el-button>
+        </span>
+        </el-dialog>   
+           
+        <el-dialog
+        title="提示"
+        v-model="centerDialogVisible2"
+        :visible="centerDialogVisible2"
+        width="80vw" 
+        top="35vh"
+        center>
+        <span>确定要取消排队吗？</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="centerDialogVisible2= false">取 消</el-button>
+          <el-button type="primary" @click="cancel">确 定</el-button>
+        </span>
+        </el-dialog>   
+
+        <div class="btn">
+            <el-button type="danger" @click="centerDialogVisible2 = true">取消排队</el-button>
+            <el-button type="primary"   >立即排队</el-button>
+        </div>
+
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+        }
+        .logo {
+            width: 100vw;
+            height: 20vh;
+		      	background-image: url("http://ipv4.home.vory.work:8802/app-icon/enroll_logo.png");
+      			background-repeat: no-repeat;
+      			background-position: center center;
+		      	background-size: 20vh;
+            margin-bottom: 5vh;
+        }
+        #header {
+          margin-bottom: 5vh ;
+        }
+        .el-descriptions {
+          margin: 0 1vw ;
+        }
+        .btn {
+          display: flex;
+          justify-content: space-around;
+          margin-top: 5vh;
+        }
+        .el-dialog__headerbtn {
+          display: none;
+        }
+    </style>
+
+    <script type="text/javascript">
+		var initViewport = function(height){
+		var metaEl = document.querySelector("#viewportMeta");
+		var content = "width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1.0,height=" + height;
+		metaEl.setAttribute('name', 'viewport');
+		metaEl.setAttribute('content', content);
+		}
+		initViewport(window.innerHeight);
+
+		var addEvenListener = function(callback, eventName) {
+    	let addEvenListenerFn = window.addEventListener || window.attatchEvent;
+    	let messageEvent = window.addEventListener ? eventName : "on" + eventName;
+    	addEvenListenerFn(messageEvent, callback, false);
+ 		}
+  
+		addEvenListener(function(){
+		setTimeout(function(){
+		initViewport(window.innerHeight);
+		},300)
+		},"orientationchange")
+    </script>
+</body>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        centerDialogVisible1:false,
+        centerDialogVisible2:false,
+        department:"",
+        aspiration:"",
+        ifOK:-1,
+        before:1,
+      },
+	  methods: {
+		  goBack: function(){
+        location.href = "上一个页面";
+      },
+      queue: function(){
+        this.centerDialogVisible1 = false;
+        axios.post("请求排队接口",{
+          token:localStorage.token,
+          studentid: localStorage.studentId,
+          department:this.department
+          })
+          .then((response) => {
+            if(response.data.ifsuccess==1){
+              alert("排队成功！");
+              axios.post("更新数据接口",{
+                token:localStorage.token,
+                studentid: localStorage.studentId
+                })
+                .then((response) => {
+                  this.ifOK = response.data.ifOK;
+                  this.before = response.data.before
+                })
+              if(this.ifOK==-1&this.before==0){
+                alert("请前往面试！")
+              } else{
+                alert("请求失败");
+              }
+            }
+        }, error => {
+          alert("请求失败");
+          console.log(error);
+      })
+      },
+      cancel: function(){
+        this.centerDialogVisible2 = false;
+        axios.post("请求取消排队接口",{
+          token:localStorage.token,
+          studentid:localStorage.studentId,
+          department:this.department
+        })
+          .then((response) => {
+            if(response.data.ifsuccess==1){
+              alert("取消排队成功！");
+              axios.post("更新数据接口",{
+                token:localStorage.token,
+                studentid: localStorage.studentId
+                })
+                .then((response) => {
+                  this.ifOK = response.data.ifOK;
+                  this.before = response.data.before
+                })
+            } else{
+              alert("请求失败");
+            }
+      }, error => {
+        alert("请求失败");
+        console.log(error);
+      })
+      }
+	  },
+    mounted(){
+      this.department = localStorage.department;
+      this.aspiration = localStorage.aspiration;
+      axios.post("请求接口",{
+        token:localStorage.token,
+        studentid: localStorage.studentId
+        })
+        .then((response) => {
+          this.ifOK = response.data.ifOK;
+          this.before = response.data.before
+        })
+
+      setInterval(() => {
+        axios.post("更新数据接口",{
+            token:localStorage.token,
+            studentid: localStorage.studentId
+          })
+          .then((response) => {
+            this.ifOK = response.data.ifOK;
+            this.before = response.data.before
+          })
+        if(this.ifOK==-1&this.before==0){
+          alert("请前往面试！")
+        }
+      }, 5000)
+    }
+    })
+
+  </script>
+
+</html>
